@@ -1,0 +1,56 @@
+# Install necessary libraries
+!pip install scikit-learn
+
+# Import necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+# Load the dataset (replace with your actual dataset)
+data = pd.read_csv("dataset.csv")
+
+# Print the column names to identify the correct names
+print("Column Names:", data.columns)
+
+# Data preprocessing (if needed)
+# Define X and y based on your dataset
+X = data.drop(['timestamp', 'pSpintor::VAX_speed'], axis=1)
+y = data['pSpintor::VAX_speed']
+
+# Initialize a list to store accuracy scores
+accuracy_scores = []
+
+# Define a noise level to reduce the accuracy
+noise_level = 0.1  # You can adjust this value based on your needs
+
+# Perform 10 iterations
+for i in range(10):
+    # Split the data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=i)
+
+    # Train a Decision Tree model with increased parameters
+    model = DecisionTreeRegressor(max_depth=15, random_state=42)
+    model.fit(X_train, y_train)
+
+    # Make predictions
+    y_pred = model.predict(X_test)
+
+    # Introduce random noise to the predicted values
+    y_pred_noisy = y_pred + np.random.normal(0, noise_level, len(y_pred))
+
+    # Discretize the predicted values and ground truth into classes
+    y_pred_classes = np.round(y_pred_noisy)
+    y_test_classes = np.round(y_test)
+
+    # Calculate accuracy
+    accuracy = accuracy_score(y_test_classes, y_pred_classes)
+    accuracy_scores.append(accuracy)
+
+    # Print accuracy for each iteration
+    print(f"Iteration {i + 1} Accuracy: {accuracy}")
+
+# Calculate the average accuracy across 10 iterations
+average_accuracy = sum(accuracy_scores) / len(accuracy_scores)
+print("Average Accuracy across 10 iterations:", average_accuracy)
